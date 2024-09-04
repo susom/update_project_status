@@ -1,63 +1,120 @@
 {
-    "name": "Update Project Status",
-
-    "namespace": "Stanford\\UpdateProjectStatus",
-
-    "description": "Utility EM works with REDCap notifications EM to move project that has certain notifications up for a certain amount of time. ",
-
-    "documentation": "README.md",
-
-    "framework-version": 15,
-
-    "authors": [
-        {
-            "name": "Ihab Zeedia",
-            "email": "ihab.zeedia@stanford.edu",
-            "institution": "Stanford University"
-        }
-    ],
-
-    "permissions": [
-
-    ],
-
-    "enable-every-page-hooks-on-system-pages": false,
-    "links": {
-        "project": [
-
-        ],
-        "control-center": [
-
-        ]
-    },
-
-    "no-auth-pages": [
-
-    ],
-
-    "project-settings": [
-
-    ],
-
-    "system-settings": [
-
-    ],
-
-    "crons": [
-        {
-            "cron_name": "CheckProjectStatus",
-            "cron_description": "Cron runs daily to check if the project is in a certain notification bucket for a certain amount of time. Then move it to the defined status. ",
-            "method": "CheckProjectStatus",
-            "cron_frequency": "86400",
-            "cron_max_run_time": "3600"
-        }
-
-    ],
-
-    "compatibility": {
-        "php-version-min": "",
-        "php-version-max": "",
-        "redcap-version-min": "",
-        "redcap-version-max": ""
+  "name": "Update Project Status",
+  "namespace": "Stanford\\UpdateProjectStatus",
+  "description": "Utility EM works with REDCap notifications EM to move project that has certain notifications up for a certain amount of time. ",
+  "documentation": "README.md",
+  "framework-version": 15,
+  "authors": [
+    {
+      "name": "Ihab Zeedia",
+      "email": "ihab.zeedia@stanford.edu",
+      "institution": "Stanford University"
     }
+  ],
+  "permissions": [
+  ],
+  "enable-every-page-hooks-on-system-pages": false,
+  "links": {
+    "project": [
+    ],
+    "control-center": [
+    ]
+  },
+  "no-auth-pages": [
+    "ajax/cron"
+  ],
+  "project-settings": [
+    {
+      "key": "rules",
+      "name": "<b>Project Status Rules</b>",
+      "required": false,
+      "type": "sub_settings",
+      "repeatable": true,
+      "sub_settings": [
+        {
+          "key": "notification-record-id",
+          "name": "<b>Notification Record  Id where Project Ids list will be saved.</b><br/>",
+          "required": true,
+          "type": "text"
+        },
+        {
+          "key": "days-elapsed",
+          "name": "<b>Number of days elapsed to update the project status</b><br/>",
+          "required": true,
+          "type": "text"
+        },
+        {
+          "key": "source-status",
+          "name": "<b>Source project status</b><br/>",
+          "required": true,
+          "type": "dropdown",
+          "choices": [
+            {
+              "name": "Development",
+              "value": "0"
+            },
+            {
+              "name": "Production",
+              "value": "1"
+            },
+            {
+              "name": "Analysis",
+              "value": "2"
+            },
+            {
+              "name": "Completed",
+              "value": "99"
+            }
+          ]
+        },
+        {
+          "key": "destination-status",
+          "name": "<b>Destination project status </b><br/>",
+          "required": true,
+          "type": "dropdown",
+          "choices": [
+            {
+              "name": "Development",
+              "value": "0"
+            },
+            {
+              "name": "Production",
+              "value": "1"
+            },
+            {
+              "name": "Analysis",
+              "value": "2"
+            },
+            {
+              "name": "Completed",
+              "value": "99"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "system-settings": [
+    {
+      "key": "notification-api-em",
+      "name": "Notification API EM directory prefix. ",
+      "required": true,
+      "type": "text"
+    }
+  ],
+  "crons": [
+    {
+      "cron_name": "check_project_status",
+      "cron_description": "Cron runs daily to check if the project is in a certain notification bucket for a certain amount of time. Then move it to the defined status. ",
+      "method": "CheckProjectStatus",
+      "cron_frequency": "86400",
+      "cron_max_run_time": "3600"
+    }
+  ],
+  "compatibility": {
+    "php-version-min": "",
+    "php-version-max": "",
+    "redcap-version-min": "",
+    "redcap-version-max": ""
+  }
 }
