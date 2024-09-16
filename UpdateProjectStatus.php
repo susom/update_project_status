@@ -20,6 +20,12 @@ class UpdateProjectStatus extends \ExternalModules\AbstractExternalModule
 
     private $notificationPID = null;
 
+    private $status = array(
+        '0' => 'Development',
+        '1' => 'Production',
+        '2' => 'Analysis/Cleanup',
+        '99' => 'Completed'
+    );
     public function __construct()
     {
         parent::__construct();
@@ -56,13 +62,15 @@ class UpdateProjectStatus extends \ExternalModules\AbstractExternalModule
 
                             // if desired status is complete we need to add the complete time and user.
                             if ($destinationStatus == 99) {
-                                $updateSQL .= ",completed_time = '" . NOW . "', completed_by = '" . db_escape(USERID) . "'";
+                                // is same status as analysis but add complete_time
+                                $updateSQL = "UPDATE redcap_projects set status = 2 ";
+                                $updateSQL .= ",completed_time = '" . NOW . "', completed_by = '" . db_escape(defined('USERID')?USERID:'SYSTEM') . "'";
                                 \Logging::logEvent("", "redcap_projects", "MANAGE", $this->getNotificationPID(), "project_id = " . $this->getNotificationPID(), "Project marked as Completed");
 
                             }
                             $updateSQL .= "WHERE project_id = $pid";
                             $updateQ = db_query($updateSQL);
-
+                            \REDCap::logEvent("PID $pid status changed from ". $this->status[$sourceStatus] ." to ". $this->status[$destinationStatus], "",  "",  $rule['notification-record-id'],  null, $this->getNotificationPID());
                         }
 
                     }
