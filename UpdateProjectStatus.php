@@ -44,7 +44,22 @@ class UpdateProjectStatus extends \ExternalModules\AbstractExternalModule
                 $record = $this->getNotificationRecord($rule['notification-record-id']);
                 if (!empty($record)) {
                     $pids = $this->getHistoryLogPIDs($rule['notification-record-id'], $rule['days-elapsed']);
+                    $excludedPids = explode(',', $record[0]['project_exclusion']);
+                    $recordPids = explode(',', $record[0]['note_project_id']);
                     foreach ($pids as $pid) {
+
+                        // make sure pid is not excluded.
+                        if(in_array($pid, $excludedPids)) {
+                            \REDCap::logEvent("PID $pid is excluded from this notification ", "",  "",  $rule['notification-record-id'],  null, $this->getNotificationPID());
+                            continue;
+                        }
+
+                        // make sure the pid still in the list.
+                        if(!in_array($pid, $recordPids)) {
+                            \REDCap::logEvent("PID $pid is no longer is PIDs list.", "",  "",  $rule['notification-record-id'],  null, $this->getNotificationPID());
+                            continue;
+                        }
+
                         $sql = "SELECT * from redcap_projects where project_id = $pid";
                         $q = db_query($sql);
                         $row = db_fetch_assoc($q);
@@ -65,12 +80,14 @@ class UpdateProjectStatus extends \ExternalModules\AbstractExternalModule
                                 // is same status as analysis but add complete_time
                                 $updateSQL = "UPDATE redcap_projects set status = 2 ";
                                 $updateSQL .= ",completed_time = '" . NOW . "', completed_by = '" . db_escape(defined('USERID')?USERID:'SYSTEM') . "'";
-                                \Logging::logEvent("", "redcap_projects", "MANAGE", $this->getNotificationPID(), "project_id = " . $this->getNotificationPID(), "Project marked as Completed");
+                                \REDCap::logEvent("", "redcap_projects", "MANAGE", $this->getNotificationPID(), "project_id = " . $this->getNotificationPID(), "Project marked as Completed");
 
                             }
                             $updateSQL .= "WHERE project_id = $pid";
                             $updateQ = db_query($updateSQL);
                             \REDCap::logEvent("PID $pid status changed from ". $this->status[$sourceStatus] ." to ". $this->status[$destinationStatus], "",  "",  $rule['notification-record-id'],  null, $this->getNotificationPID());
+                            \REDCap::logEvent("PID $pid status changed from ". $this->status[$sourceStatus] ." to ". $this->status[$destinationStatus], "",  "",  $rule['notification-record-id'],  null, $pid);
+                            $this->emLog("PID $pid status changed from ". $this->status[$sourceStatus] ." to ". $this->status[$destinationStatus] . ' - Notification RecordID: ' . $rule['notification-record-id'] );
                         }
 
                     }
